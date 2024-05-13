@@ -1,6 +1,6 @@
 # Project: Book Recommender System Using Machine Learning! | Collaborative Filtering Based
 
-<img src="demo/Books.jpeg" alt="workflow" width="70%">
+<img src="Demo/Books.jpeg" alt="workflow" width="70%">
 
 Recommendation systems are becoming increasingly important in today’s extremely busy world. People are always short on time with the myriad tasks they need to accomplish in the limited 24 hours. Therefore, the recommendation systems are important as they help them make the right choices, without having to expend their cognitive resources.
 
@@ -62,11 +62,11 @@ here is a demo,
 
 # Demo:
 
-<img src="demo/1.png" alt="workflow" width="70%">
+<img src="Demo/1.png" alt="workflow" width="70%">
 
-<img src="demo/2.png" alt="workflow" width="70%">
+<img src="Demo/2.png" alt="workflow" width="70%">
 
-<img src="demo/3.png" alt="workflow" width="70%">
+<img src="Demo/3.png" alt="workflow" width="70%">
 
 
 # Dataset has been used:
