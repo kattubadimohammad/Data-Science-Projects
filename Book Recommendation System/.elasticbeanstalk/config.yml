@@ -3,8 +3,7 @@ branch-defaults:
     environment: my-streamlit-env
 global:
   application_name: my-streamlit-app
-  default_ec2_keyname: aws-eb
-  default_platform: Python 3.8
-  default_region: us-west-2
+  default_platform: Python 3.11
+  default_region: eu-north-1
   profile: null
-  sc: git
+  sc: null
