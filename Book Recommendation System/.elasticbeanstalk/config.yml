@@ -1,9 +1,0 @@
-branch-defaults:
-  default:
-    environment: my-streamlit-env
-global:
-  application_name: my-streamlit-app
-  default_platform: Python 3.11
-  default_region: eu-north-1
-  profile: null
-  sc: null
