@@ -6,9 +6,8 @@ Date: 2023-Dec-31
 
 import pickle
 import numpy as np
-from flask import Flask, send_file
+from flask import Flask, send_file, render_template
 import streamlit as st
-from streamlit import config as _config
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -78,7 +77,7 @@ def run_streamlit():
 
 @app.route('/')
 def index():
-    return send_file('index.html')  # Ensure this points to a valid HTML file if needed
+    return render_template('index.html')  
 
 @app.route('/streamlit')
 def streamlit_app():
@@ -87,4 +86,4 @@ def streamlit_app():
     return "Streamlit app running"
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+    app.run(host='0.0.0.0')
