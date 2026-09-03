@@ -119,13 +119,12 @@ except Exception as exc:
     st.stop()
 
 
-def fetch_posters(suggestions):
-    """Return cover URLs for books returned by the nearest-neighbor model."""
-    recommended_user_ids = [book_pivot.columns[index] for index in suggestions[0]]
+def fetch_posters(book_titles):
+    """Return cover URLs matched to the recommended book titles."""
     poster_urls = []
 
-    for user_id in recommended_user_ids:
-        matches = np.where(final_rating["user_id"] == user_id)[0]
+    for book_title in book_titles:
+        matches = np.where(final_rating["title"] == book_title)[0]
         if len(matches):
             poster_urls.append(final_rating.iloc[matches[0]]["image_url"])
         else:
@@ -149,7 +148,7 @@ def recommend_books(user_id):
     )
 
     recommended_books = [book_pivot.index[index] for index in suggestions[0]]
-    poster_urls = fetch_posters(suggestions)
+    poster_urls = fetch_posters(recommended_books)
 
     # The first nearest neighbor is the selected profile itself.
     results = list(zip(recommended_books[1:], poster_urls[1:]))
