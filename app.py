@@ -10,9 +10,6 @@ import numpy as np
 import streamlit as st
 
 
-# -----------------------------------------------------------------------------
-# Page configuration
-# -----------------------------------------------------------------------------
 st.set_page_config(
     page_title="Book Recommendation System",
     page_icon="📚",
@@ -21,9 +18,6 @@ st.set_page_config(
 )
 
 
-# -----------------------------------------------------------------------------
-# Styling
-# -----------------------------------------------------------------------------
 st.markdown(
     """
     <style>
@@ -32,62 +26,52 @@ st.markdown(
             padding-top: 2.5rem;
             padding-bottom: 3rem;
         }
-
         .hero {
             text-align: center;
             padding: 1.5rem 0 1.75rem 0;
         }
-
         .hero h1 {
             font-size: 2.6rem;
             margin-bottom: 0.45rem;
             letter-spacing: -0.03em;
         }
-
         .hero p {
             font-size: 1.05rem;
             opacity: 0.72;
             margin: 0 auto;
             max-width: 700px;
         }
-
         .section-label {
             font-weight: 700;
             font-size: 1.05rem;
             margin-bottom: 0.35rem;
         }
-
         .helper-text {
             opacity: 0.65;
             font-size: 0.9rem;
             margin-bottom: 0.75rem;
         }
-
         div[data-testid="stImage"] img {
             height: 280px;
             width: 100%;
             object-fit: cover;
             border-radius: 10px;
         }
-
         div[data-testid="stButton"] > button {
             width: 100%;
             min-height: 46px;
             font-weight: 700;
             border-radius: 10px;
         }
-
         .how-it-works {
             text-align: center;
             padding: 1.5rem 0 0.5rem 0;
         }
-
         .how-it-works p {
             opacity: 0.7;
             max-width: 760px;
             margin: 0.5rem auto 0 auto;
         }
-
         .footer {
             text-align: center;
             opacity: 0.55;
@@ -100,9 +84,6 @@ st.markdown(
 )
 
 
-# -----------------------------------------------------------------------------
-# Load model artifacts once per app process
-# -----------------------------------------------------------------------------
 ARTIFACTS = Path("artifacts")
 
 
@@ -114,7 +95,6 @@ def load_artifacts():
         "final_rating.pkl",
         "book_pivot.pkl",
     ]
-
     missing = [name for name in required_files if not (ARTIFACTS / name).exists()]
     if missing:
         raise FileNotFoundError("Missing model artifacts: " + ", ".join(missing))
@@ -139,9 +119,6 @@ except Exception as exc:
     st.stop()
 
 
-# -----------------------------------------------------------------------------
-# Recommendation logic
-# -----------------------------------------------------------------------------
 def fetch_posters(suggestions):
     """Return cover URLs for books returned by the nearest-neighbor model."""
     recommended_user_ids = [book_pivot.columns[index] for index in suggestions[0]]
@@ -174,19 +151,11 @@ def recommend_books(user_id):
     recommended_books = [book_pivot.index[index] for index in suggestions[0]]
     poster_urls = fetch_posters(suggestions)
 
-    # The nearest-neighbor result may contain the selected profile itself.
-    results = [
-        (title, poster)
-        for title, poster in zip(recommended_books, poster_urls)
-        if title != user_id
-    ]
-
+    # The first nearest neighbor is the selected profile itself.
+    results = list(zip(recommended_books[1:], poster_urls[1:]))
     return results[:5]
 
 
-# -----------------------------------------------------------------------------
-# UI
-# -----------------------------------------------------------------------------
 st.markdown(
     """
     <div class="hero">
