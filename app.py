@@ -197,7 +197,7 @@ with st.container():
                 with column:
                     with st.container(border=True):
                         if poster_url:
-                            st.image(poster_url, use_column_width=True)
+                            st.image(poster_url, width="stretch")
                         else:
                             st.info("Cover unavailable")
                         st.markdown(f"**{title}**")
