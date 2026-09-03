@@ -48,7 +48,7 @@ st.markdown(
             font-size: 1.05rem;
             opacity: 0.72;
             margin: 0 auto;
-            max-width: 680px;
+            max-width: 700px;
         }
 
         .section-label {
@@ -117,24 +117,22 @@ def load_artifacts():
 
     missing = [name for name in required_files if not (ARTIFACTS / name).exists()]
     if missing:
-        raise FileNotFoundError(
-            "Missing model artifacts: " + ", ".join(missing)
-        )
+        raise FileNotFoundError("Missing model artifacts: " + ", ".join(missing))
 
     with open(ARTIFACTS / "model.pkl", "rb") as file:
         model = pickle.load(file)
     with open(ARTIFACTS / "user_ids.pkl", "rb") as file:
-        book_names = pickle.load(file)
+        user_ids = pickle.load(file)
     with open(ARTIFACTS / "final_rating.pkl", "rb") as file:
         final_rating = pickle.load(file)
     with open(ARTIFACTS / "book_pivot.pkl", "rb") as file:
         book_pivot = pickle.load(file)
 
-    return model, book_names, final_rating, book_pivot
+    return model, user_ids, final_rating, book_pivot
 
 
 try:
-    model, book_names, final_rating, book_pivot = load_artifacts()
+    model, user_ids, final_rating, book_pivot = load_artifacts()
 except Exception as exc:
     st.error("The recommendation model could not be loaded.")
     st.caption(f"Technical detail: {exc}")
@@ -145,12 +143,12 @@ except Exception as exc:
 # Recommendation logic
 # -----------------------------------------------------------------------------
 def fetch_posters(suggestions):
-    """Return cover URLs for the books returned by the nearest-neighbor model."""
-    selected_book_names = [book_pivot.columns[index] for index in suggestions[0]]
+    """Return cover URLs for books returned by the nearest-neighbor model."""
+    recommended_user_ids = [book_pivot.columns[index] for index in suggestions[0]]
     poster_urls = []
 
-    for book_name in selected_book_names:
-        matches = np.where(final_rating["user_id"] == book_name)[0]
+    for user_id in recommended_user_ids:
+        matches = np.where(final_rating["user_id"] == user_id)[0]
         if len(matches):
             poster_urls.append(final_rating.iloc[matches[0]]["image_url"])
         else:
@@ -159,28 +157,28 @@ def fetch_posters(suggestions):
     return poster_urls
 
 
-def recommend_books(book_name):
-    """Find books nearest to the selected book using the trained model."""
-    matches = np.where(book_pivot.columns == book_name)[0]
+def recommend_books(user_id):
+    """Find books associated with readers nearest to the selected user."""
+    matches = np.where(book_pivot.columns == user_id)[0]
     if len(matches) == 0:
-        raise ValueError("The selected book is not available in the recommendation model.")
+        raise ValueError("The selected user profile is not available in the model.")
 
-    book_id = matches[0]
+    user_index = matches[0]
     n_neighbors = min(6, len(book_pivot))
 
     _, suggestions = model.kneighbors(
-        book_pivot.iloc[book_id, :].values.reshape(1, -1),
+        book_pivot.iloc[user_index, :].values.reshape(1, -1),
         n_neighbors=n_neighbors,
     )
 
     recommended_books = [book_pivot.index[index] for index in suggestions[0]]
     poster_urls = fetch_posters(suggestions)
 
-    # Remove the selected book from the displayed results.
+    # The nearest-neighbor result may contain the selected profile itself.
     results = [
         (title, poster)
         for title, poster in zip(recommended_books, poster_urls)
-        if title != book_name
+        if title != user_id
     ]
 
     return results[:5]
@@ -193,37 +191,37 @@ st.markdown(
     """
     <div class="hero">
         <h1>📚 Book Recommendation System</h1>
-        <p>Discover your next great read with machine learning-powered recommendations.</p>
+        <p>Discover books you may enjoy with machine learning-powered personalized recommendations.</p>
     </div>
     """,
     unsafe_allow_html=True,
 )
 
 with st.container():
-    st.markdown('<div class="section-label">Choose a book you like</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-label">Choose your reader profile</div>', unsafe_allow_html=True)
     st.markdown(
-        '<div class="helper-text">Select a book and we\'ll find five similar reads for you.</div>',
+        '<div class="helper-text">Select your user ID and we\'ll find five recommended books based on similar reading patterns.</div>',
         unsafe_allow_html=True,
     )
 
-    selected_book = st.selectbox(
-        "Book selection",
-        book_names,
+    selected_user = st.selectbox(
+        "Reader profile",
+        user_ids,
         label_visibility="collapsed",
     )
 
-    if st.button("🔍 Recommend Books", type="primary"):
+    if st.button("🔍 Get My Recommendations", type="primary"):
         with st.spinner("Finding books you may enjoy..."):
             try:
-                recommendations = recommend_books(selected_book)
+                recommendations = recommend_books(selected_user)
             except Exception as exc:
-                st.error("Sorry, we couldn't generate recommendations for this book.")
+                st.error("Sorry, we couldn't generate recommendations for this profile.")
                 st.caption(f"Technical detail: {exc}")
                 st.stop()
 
         if recommendations:
-            st.markdown("### ✨ Recommended for you")
-            st.caption(f"Because you selected **{selected_book}**")
+            st.markdown("### ✨ Recommended books")
+            st.caption(f"Personalized recommendations for reader **{selected_user}**")
 
             columns = st.columns(5, gap="medium")
             for column, (title, poster_url) in zip(columns, recommendations):
@@ -235,7 +233,7 @@ with st.container():
                             st.info("Cover unavailable")
                         st.markdown(f"**{title}**")
         else:
-            st.info("We couldn't find similar books for this selection.")
+            st.info("We couldn't find recommendations for this reader profile.")
 
 st.markdown(
     """
@@ -243,7 +241,7 @@ st.markdown(
         <h3>⚙️ How it works</h3>
         <p>
             The app uses collaborative filtering and a Nearest Neighbors model
-            to identify books with similar reader-interaction patterns.
+            to identify books based on similar reader-interaction patterns.
         </p>
     </div>
     """,
